@@ -1,5 +1,5 @@
 var express = require('express');
-//处理路径的 path.join path.resolve
+//处理路径的 path.join p ath.resolve
 //url querystring JSON .parse
 var path = require('path');
 //处理收藏夹图标
@@ -17,6 +17,10 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 //得到app
 var app = express();
+
+//可设置是否为生产环境
+// app.set('env',process.env)
+
 
 // view engine setup
 //设置模板的存放路径 默认路径是 当前目录下的views
@@ -47,20 +51,30 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/users', users);
 
 // catch 404 and forward to error handler
+//捕获404错误，并转发到错误处理中间件
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
-
+//错误处理
+//开发时的错误处理
 // error handler
+//将打印出错误的堆栈
+console.log(app.get('env'))//development
+
+//错误处理中间件有4个参数  第一个参数是错误对象
+//如果有中间件出错了，会把请求转交给错误处理中间件来处理
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
+    //生产环境下的错误处理 不向用户暴露堆栈信息
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
+    //设置状态码 默认是500
   res.status(err.status || 500);
+  //渲染模板
   res.render('error');
 });
 
