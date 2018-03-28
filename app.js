@@ -13,8 +13,10 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 //主页路由
 var index = require('./routes/index');
-//用户路由
+//文章路由
 var users = require('./routes/users');
+
+var articles = require('./routes/articles');
 //得到app
 var app = express();
 
@@ -49,6 +51,7 @@ app.use(express.static(path.join(__dirname, 'public')));
  app.use('/', index);
 // app.use('/', routes);
 app.use('/users', users);
+app.use('/articles', articles);
 
 // catch 404 and forward to error handler
 //捕获404错误，并转发到错误处理中间件
