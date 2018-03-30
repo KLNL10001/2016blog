@@ -17,6 +17,11 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 
 var articles = require('./routes/articles');
+//引入session中间件 req.session
+var session    = require('express-session')
+var MongoStore = require('connect-mongo')(session)
+var config     = require('./config')
+
 //得到app
 var app = express();
 
@@ -45,6 +50,21 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //cookie处理中间件
 //解析cookie req.cookie  req.cookie(key,value)
 app.use(cookieParser());
+//因为session依赖于cookie 所以需要写在cookie后面
+app.use(session({
+    secret:'blog',
+    resave:true,//每次响应结束后都保存一下session数据
+    saveUninitialized:true,//保存新创建但未初始化的session
+    store:new MongoStore({
+        url:config.dbUrl
+    })
+}))
+//res.locals  才是真正的渲染模板的对象
+app.use(function (req,res,next) {
+    res.locals.user = req.session.user
+    next()
+})
+
 //处理静态文件服务中间件  指定一个绝对目录的路径作为静态文件的根目录
 app.use(express.static(path.join(__dirname, 'public')));
 //指定路由
@@ -52,12 +72,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 // app.use('/', routes);
 app.use('/users', users);
 app.use('/articles', articles);
-
 // catch 404 and forward to error handler
 //捕获404错误，并转发到错误处理中间件
 app.use(function(req, res, next) {
   var err = new Error('Not Found');
-  err.status = 404;
+    res.status = 404;
   next(err);
 });
 //错误处理

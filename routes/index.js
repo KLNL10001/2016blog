@@ -6,9 +6,10 @@ var router = express.Router();
 * path 指定路径
 * listener 指定回调监听函数
 * GET home page.
-* */
+*/
+
 router.get('/', function(req, res, next) {
-  res.render('index', { title: '首页' });
+  res.render('index', { title: '首页'});
 });
 
 module.exports = router;
