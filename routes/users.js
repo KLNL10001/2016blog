@@ -21,20 +21,27 @@ router.get('/reg',function (req,res,next) {
 })
 
 router.post('/reg',function (req,res,next) {
-    var user = req.body
+    var user=req.body;
     if (user.password != user.repassword)
     {
         res.redirect('back')
     }
     else
     {
-        var user=req.body;
         //保存对象有两种方法  一个叫做model.create  entity.save
         //这相当于保存到了数据库中
         models.User.create(req.body,function (err,doc) {
-            console.log(doc);
-            //临时重定向 状态码为302  location
-            res.redirect('/users/login')
+            if (err)
+            {
+                req.flash('error','用户注册失败！')
+            }
+            else
+            {
+                console.log('前台发送过来的用户数据',doc);
+                req.flash('success','用户注册成功！')//大概等同于 req.session.success='用户注册成功！'
+                //临时重定向 状态码为302  location
+                res.redirect('/users/login')
+            }
         })
     }
 })
@@ -56,19 +63,22 @@ router.post('/login',function (req,res,next) {
             {
                 //如果登录成功后把查询到的user用户赋给session的user属性
                 req.session.user=doc
+                req.flash('success','用户登录成功！')
                 res.redirect('/')
             }
             else //找不到 登录失败
             {
+                req.flash('error','用户登录失败！')
                 res.redirect('back')
-
             }
         }
     })
 })
+
 //登出
 router.get('/logout',function (req,res,next) {
     req.session.user=null
+    req.flash('success','用户退出成功！')
     res.redirect('/');
 })
 

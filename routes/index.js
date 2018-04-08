@@ -9,6 +9,7 @@ var router = express.Router();
 */
 
 router.get('/', function(req, res, next) {
+  var user = req.session.user
   res.render('index', { title: '首页'});
 });
 

@@ -17,17 +17,20 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 
 var articles = require('./routes/articles');
-//引入session中间件 req.session
+//引入session中间件 req.session  req中多了session属性
 var session    = require('express-session')
+//这个是把session  放入到Mongo中
 var MongoStore = require('connect-mongo')(session)
 var config     = require('./config')
+var flash = require('connect-flash')
 
 //得到app
 var app = express();
+//不可以放在这里 因为是依赖于session  放在session之后
+// app.use(flash())
 
 //可设置是否为生产环境
 // app.set('env',process.env)
-
 
 // view engine setup
 //设置模板的存放路径 默认路径是 当前目录下的views
@@ -43,6 +46,8 @@ app.engine('html',require('ejs').__express)
 //日志记录中间件
 //:method :url :status :response-time ms - :res[content-length]
 app.use(logger('dev'));
+
+console.log(process.env.NODE_ENV);
 //处理content-type为json的请求体{"name":"value"}
 app.use(bodyParser.json());
 //处理content-type为urlencoded的请求体 extended为true表示使用querystring来将请求体的字符串转成对象 name=value1&&name=value2
@@ -51,20 +56,23 @@ app.use(bodyParser.urlencoded({ extended: false }));
 //解析cookie req.cookie  req.cookie(key,value)
 app.use(cookieParser());
 //因为session依赖于cookie 所以需要写在cookie后面
+//登录注册退出的时候会写一下session  一般都不写session
 app.use(session({
-    secret:'blog',
+    secret:'blog',//加密的字符串
     resave:true,//每次响应结束后都保存一下session数据
     saveUninitialized:true,//保存新创建但未初始化的session
-    store:new MongoStore({
+    store:new MongoStore({//指定session的存放位置
         url:config.dbUrl
     })
 }))
+app.use(flash())
 //res.locals  才是真正的渲染模板的对象
 app.use(function (req,res,next) {
-    res.locals.user = req.session.user
+    res.locals.user    = req.session.user
+    res.locals.success = req.flash('success').toString()
+    res.locals.error   = req.flash('error').toString()
     next()
 })
-
 //处理静态文件服务中间件  指定一个绝对目录的路径作为静态文件的根目录
 app.use(express.static(path.join(__dirname, 'public')));
 //指定路由
@@ -99,5 +107,4 @@ app.use(function(err, req, res, next) {
   //渲染模板
   res.render('error');
 });
-
 module.exports = app;
