@@ -6,7 +6,8 @@ mongoose.connect(config.dbUrl)
 exports.User = mongoose.model('user',new mongoose.Schema({
     username:String,
     password:String,
-    email:String
+    email:String,
+    avatar:String
 }))
 
 

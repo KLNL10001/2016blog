@@ -2,6 +2,8 @@ var express = require('express');
 //路由的实例
 var router = express.Router();
 var models = require('../models')
+var auth =   require('../middleware/auth')
+var util =   require('util')
 
 //这里面可以挂use
 // router.use(function (req,res) {
@@ -15,12 +17,13 @@ var models = require('../models')
 //   res.send('respond with a resource');
 // });
 
+
 //注册
-router.get('/reg',function (req,res,next) {
+router.get('/reg',auth.checkNotLogin,function (req,res,next) {
     res.render('user/reg', { title: '注册' });
 })
-
-router.post('/reg',function (req,res,next) {
+//
+router.post('/reg',auth.checkNotLogin,function (req,res,next) {
     var user=req.body;
     if (user.password != user.repassword)
     {
@@ -28,6 +31,8 @@ router.post('/reg',function (req,res,next) {
     }
     else
     {
+        //增加一个用户头像
+        req.body.avatar= 'https://secure.gravatar.com/avatar/xxx2s-48'
         //保存对象有两种方法  一个叫做model.create  entity.save
         //这相当于保存到了数据库中
         models.User.create(req.body,function (err,doc) {
@@ -47,11 +52,11 @@ router.post('/reg',function (req,res,next) {
 })
 
 //登录
-router.get('/login',function (req,res,next) {
+router.get('/login',auth.checkNotLogin,function (req,res,next) {
     res.render('user/login', { title: '登录' });
 })
 
-router.post('/login',function (req,res,next) {
+router.post('/login',auth.checkNotLogin,function (req,res,next) {
     models.User.findOne({username:req.body.username,password:req.body.password},function (err,doc) {
         if (err)
         {
@@ -76,7 +81,7 @@ router.post('/login',function (req,res,next) {
 })
 
 //登出
-router.get('/logout',function (req,res,next) {
+router.get('/logout',auth.checkLogin,function (req,res,next) {
     req.session.user=null
     req.flash('success','用户退出成功！')
     res.redirect('/');
