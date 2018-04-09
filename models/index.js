@@ -1,8 +1,6 @@
-
 var mongoose = require('mongoose')
 var config   = require('../config')
 var type     = mongoose.Types.ObjectId
-
 
 mongoose.connect(config.dbUrl)
 
@@ -20,5 +18,6 @@ exports.Article=mongoose.model('article',new mongoose.Schema({
      user:{type:mongoose.Schema.Types.ObjectId,ref:'user'},
     title:String,
     content:String,
+    poster:String,//增加一张图片
     createAt:{type:Date,default:Date.now()},
 }));
