@@ -12,10 +12,16 @@ var mardown = require('markdown').markdown
 * GET home page.
 */
 
+/**
+ * 分页 传参当前页码 每页的条数
+ * 结果返回当页的数据 一共多少页 当前页码 每页的条数
+ */
 router.get('/', function(req, res, next) {
-  var user = req.session.user
+  var user    = req.session.user
   var keyword = req.query.keyword; //先取出查询关键字
-  var search = req.query.search//取出查询按钮
+  var search  = req.query.search//取出查询按钮
+  var pageNum = parseInt(req.query.pageNum)||1;//当前页码
+  var pageSize = parseInt(req.query.pageSize)||2;//一页有多少条数据
   var querObj = {}
   if (search)//如果search有值 那么强行覆盖session里面的值
   {
@@ -34,22 +40,25 @@ router.get('/', function(req, res, next) {
       querObj = {$or:[{title:reg},{content:reg}]}
       req.session.keyword=keyword
   }
-
   //user 字符串 对象 user.avatar
   //先查找 然后把user字符串转成user对象
-    models.Article.find(querObj).populate('user').exec(function (err,articles) {
-        console.log(articles)
-        if (err)
-        {
-        }
-        else
-        {
-            articles.forEach(function (article) {
-                article.content = mardown.toHTML(article.content)
+    models.Article.find(querObj).skip((pageNum-1)*pageSize).limit(pageSize).populate('user').exec(function (err,articles) {
 
-            })
-            res.render('index', { articles: articles});
-        }
+        articles.forEach(function (article) {
+            article.content = mardown.toHTML(article.content)
+        })
+        //取得这个条件有多少条符合的数据
+        models.Article.count(querObj,function (err,count) {
+            res.render('index', {
+                articles: articles,
+                totalPage:Math.ceil(count/pageSize),
+                keyword:keyword,
+                pageNum:pageNum,
+                pageSize:pageSize
+            });
+
+        })
+
     })
 });
 
