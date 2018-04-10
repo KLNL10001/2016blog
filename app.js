@@ -71,6 +71,7 @@ app.use(function (req,res,next) {
     res.locals.user    = req.session.user
     res.locals.success = req.flash('success').toString()
     res.locals.error   = req.flash('error').toString()
+    res.locals.keyword = req.session.keyword
     next()
 })
 //处理静态文件服务中间件  指定一个绝对目录的路径作为静态文件的根目录
